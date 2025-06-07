@@ -18,7 +18,7 @@ if (!process.env.CI) {
   }
 }
 
-const DIST_FOLDER = "dist/prebuilt-resources/";
+const DIST_FOLDER = "dist/resources/";
 // clean up the dist folder if it exists
 if (existsSync(DIST_FOLDER)) {
   rmSync(DIST_FOLDER);
@@ -352,6 +352,7 @@ await downloadBinary(
 await (async () => {
   const json = await releaseData("microchad", "borderwallets");
   const asset = json.assets.find(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (asset: any) => asset.name === "borderwallets.html"
   );
   if (!asset) {

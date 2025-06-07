@@ -1,7 +1,14 @@
 // import { $ } from "bun";
 import { fetch } from "bun";
-import { existsSync, mkdirSync, rmSync } from "fs";
-import { writeFile } from "fs/promises";
+import {
+  Dirent,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync,
+  statSync,
+} from "fs";
+import { readFile, writeFile } from "fs/promises";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -12,7 +19,8 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 if (!process.env.CI) {
   console.log("About to download and give build a change to abort");
   const answer = prompt("Continue? (y/N)");
-  if (!answer || answer.toLowerCase() !== "n") {
+  console.log("answer", answer);
+  if (!answer || answer.toLowerCase() === "n") {
     throw new Error("Aborted");
   }
 }
@@ -47,6 +55,49 @@ const downloadText = async (filename: string, url: string) => {
     mkdirSync(DIST_FOLDER + dir, { recursive: true });
   }
   await writeFile(DIST_FOLDER + filename, data);
+
+  // sanity check file for success
+  if (!existsSync(DIST_FOLDER + filename)) {
+    throw new Error(`Failed to download ${filename}`);
+  }
+  // also check size not null or 0
+  const stats = statSync(DIST_FOLDER + filename);
+  if (stats.size === 0) {
+    throw new Error(`Failed to download ${filename}`);
+  }
+  if (filename.endsWith(".html")) {
+    // also check text like html
+    const text = await readFile(DIST_FOLDER + filename, "utf8");
+    if (!text.trim().match(/^<!DOCTYPE html>/i)) {
+      throw new Error(
+        `Failed to download ${filename} - not html: ${text
+          .trim()
+          .slice(0, 100)}`
+      );
+    }
+  } else if (filename.endsWith(".txt")) {
+    // also check text like txt
+    const text = await readFile(DIST_FOLDER + filename, "utf8");
+    // Check that the file contains readable text (not binary) and has some content
+    if (!text.trim() || text.includes("\0")) {
+      throw new Error(
+        `Failed to download ${filename} - not valid text: ${text
+          .trim()
+          .slice(0, 100)}`
+      );
+    }
+  } else if (filename.endsWith(".js")) {
+    // also check js
+    const text = await readFile(DIST_FOLDER + filename, "utf8");
+    if (!text.trim().match(/(function|require|import)/i)) {
+      throw new Error(
+        `Failed to download ${filename} - not valid js: ${text
+          .trim()
+          .slice(0, 100)}`
+      );
+    }
+  }
+  // console.log(`Downloaded ${filename}`);
   lastCall = new Date();
 };
 
@@ -64,6 +115,21 @@ const downloadBinary = async (filename: string, url: string) => {
     mkdirSync(DIST_FOLDER + dir, { recursive: true });
   }
   await writeFile(DIST_FOLDER + filename, new Uint8Array(data));
+  // sanity check file for success
+  if (!existsSync(DIST_FOLDER + filename)) {
+    throw new Error(`Failed to download ${filename}`);
+  }
+  // also check size not null or 0
+  const stats = statSync(DIST_FOLDER + filename);
+  if (stats.size === 0) {
+    throw new Error(`Failed to download ${filename}`);
+  }
+  // also check binary
+  const buffer = await readFile(DIST_FOLDER + filename);
+  if (buffer.length === 0) {
+    throw new Error(`Failed to download ${filename}`);
+  }
+  // console.log(`Downloaded ${filename}`);
   lastCall = new Date();
 };
 
@@ -237,7 +303,7 @@ await (async () => {
     }
     await downloadBinary(
       "nodejs/" + filename,
-      "https://nodejs.org/download/release/latest/" + link
+      "https://nodejs.org/download/release/latest/" + filename
     );
   }
 })();
@@ -263,3 +329,56 @@ await (async () => {
   }
   await downloadBinary("ilap/slip39-js-" + tag_name + ".tar.gz", download_url);
 })();
+
+// finally console.table over all files with some stats
+const files = readdirSync(DIST_FOLDER, {
+  withFileTypes: true,
+  recursive: true,
+});
+const summary = [];
+for (const file of files) {
+  // skip if it's a directory
+  if (file.isDirectory()) {
+    continue;
+  }
+  const size = statSync(file.parentPath + "/" + file.name).size;
+  const size_kb = parseFloat((size / 1024).toFixed(2));
+  const size_mb = parseFloat((size / 1024 / 1024).toFixed(2));
+  const filename = file.name;
+
+  let first100 = "";
+  try {
+    const text = await readFile(file.parentPath + "/" + file.name, "utf8");
+    first100 = text
+      .trim()
+      .replace(/^[^\S]+/, "")
+      .replace(/\n+$/, " ")
+      .replace(/\s+/g, " ")
+      .slice(0, 50);
+  } catch (error) {
+    // If it's a binary file, reading as utf8 might fail
+    first100 = "[binary file]";
+  }
+
+  const type = (() => {
+    if (filename.endsWith(".html")) {
+      return "html";
+    } else if (filename.endsWith(".txt")) {
+      return "txt";
+    } else if (filename.endsWith(".js")) {
+      return "js";
+    } else {
+      return "binary";
+    }
+  })();
+
+  summary.push({
+    name: filename,
+    size_kb,
+    size_mb,
+    type,
+    first100,
+  });
+}
+summary.sort((a, b) => b.size_kb - a.size_kb);
+console.table(summary);

@@ -330,6 +330,22 @@ await (async () => {
   await downloadBinary("ilap/slip39-js-" + tag_name + ".tar.gz", download_url);
 })();
 
+// pointbiz/bitaddress.org
+await (async () => {
+  const json = await releaseData("pointbiz", "bitaddress.org");
+  const download_url = json.tarball_url;
+  const tag_name = json.tag_name;
+  if (!download_url || !tag_name || !tag_name.match(/^v\d+\.\d+\.\d+$/)) {
+    throw new Error(
+      "No download URL or tag name found on github.com/ilap/slip39-js"
+    );
+  }
+  await downloadBinary(
+    "pointbiz/bitaddress.org-" + tag_name + ".tar.gz",
+    download_url
+  );
+})();
+
 // finally console.table over all files with some stats
 const files = readdirSync(DIST_FOLDER, {
   withFileTypes: true,

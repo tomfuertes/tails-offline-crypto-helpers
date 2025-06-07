@@ -17,8 +17,8 @@
   "scripts": {
     "dev": "bun run index.ts",
     "build": "mkdir -p ./dist && npm run build:linux && npm run build:macos",
-    "build:linux": "bun build index.ts --compile --target=bun-linux-x64-baseline --outfile dist/tails-offline-crypto-helpers && chmod +x dist/tails-offline-crypto-helpers",
-    "build:macos": "bun build index.ts --compile --target=bun-darwin-arm64-baseline --outfile dist/macos-offline-crypto-helpers && chmod +x dist/macos-offline-crypto-helpers",
+    "build:linux": "bun build cli/index.ts --compile --target=bun-linux-x64-baseline --outfile dist/tails-offline-crypto-helpers && chmod +x dist/tails-offline-crypto-helpers",
+    "build:macos": "bun build cli/index.ts --compile --target=bun-darwin-arm64-baseline --outfile dist/macos-offline-crypto-helpers && chmod +x dist/macos-offline-crypto-helpers",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

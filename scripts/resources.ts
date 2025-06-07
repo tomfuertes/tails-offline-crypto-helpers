@@ -5,26 +5,26 @@ import { readFile, writeFile } from "fs/promises";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-/**
- * Echo about to download and give build a change to abort
- * - only if not on ci
- */
-if (!process.env.CI) {
-  console.log("About to download and give build a change to abort");
-  const answer = prompt("Continue? (y/N)");
-  console.log("answer", answer);
-  if (!answer || answer.toLowerCase() === "n") {
-    throw new Error("Aborted");
-  }
-}
+// /**
+//  * Echo about to download and give build a change to abort
+//  * - only if not on ci
+//  */
+// if (!process.env.CI) {
+//   console.log("About to download and give build a change to abort");
+//   const answer = prompt("Continue? (y/N)");
+//   console.log("answer", answer);
+//   if (!answer || answer.toLowerCase() === "n") {
+//     throw new Error("Aborted");
+//   }
+// }
 
-const DIST_FOLDER = "dist/resources/";
-// clean up the dist folder if it exists
-if (existsSync(DIST_FOLDER)) {
-  rmSync(DIST_FOLDER);
+const RESOURCES_FOLDER = "resources/";
+// clean up the resources folder if it exists
+if (existsSync(RESOURCES_FOLDER)) {
+  rmSync(RESOURCES_FOLDER, { recursive: true });
   await sleep(50);
 }
-mkdirSync(DIST_FOLDER, { recursive: true });
+mkdirSync(RESOURCES_FOLDER, { recursive: true });
 await sleep(50);
 
 let lastCall = new Date();
@@ -45,22 +45,22 @@ const downloadText = async (filename: string, url: string) => {
   // if filename is a directory, create it
   if (filename.includes("/")) {
     const dir = filename.split("/").slice(0, -1).join("/");
-    mkdirSync(DIST_FOLDER + dir, { recursive: true });
+    mkdirSync(RESOURCES_FOLDER + dir, { recursive: true });
   }
-  await writeFile(DIST_FOLDER + filename, data);
+  await writeFile(RESOURCES_FOLDER + filename, data);
 
   // sanity check file for success
-  if (!existsSync(DIST_FOLDER + filename)) {
+  if (!existsSync(RESOURCES_FOLDER + filename)) {
     throw new Error(`Failed to download ${filename}`);
   }
   // also check size not null or 0
-  const stats = statSync(DIST_FOLDER + filename);
+  const stats = statSync(RESOURCES_FOLDER + filename);
   if (stats.size === 0) {
     throw new Error(`Failed to download ${filename}`);
   }
   if (filename.endsWith(".html")) {
     // also check text like html
-    const text = await readFile(DIST_FOLDER + filename, "utf8");
+    const text = await readFile(RESOURCES_FOLDER + filename, "utf8");
     if (!text.trim().match(/^<!DOCTYPE html>/i)) {
       throw new Error(
         `Failed to download ${filename} - not html: ${text
@@ -70,7 +70,7 @@ const downloadText = async (filename: string, url: string) => {
     }
   } else if (filename.endsWith(".txt")) {
     // also check text like txt
-    const text = await readFile(DIST_FOLDER + filename, "utf8");
+    const text = await readFile(RESOURCES_FOLDER + filename, "utf8");
     // Check that the file contains readable text (not binary) and has some content
     if (!text.trim() || text.includes("\0")) {
       throw new Error(
@@ -81,7 +81,7 @@ const downloadText = async (filename: string, url: string) => {
     }
   } else if (filename.endsWith(".js")) {
     // also check js
-    const text = await readFile(DIST_FOLDER + filename, "utf8");
+    const text = await readFile(RESOURCES_FOLDER + filename, "utf8");
     if (!text.trim().match(/(function|require|import)/i)) {
       throw new Error(
         `Failed to download ${filename} - not valid js: ${text
@@ -105,20 +105,20 @@ const downloadBinary = async (filename: string, url: string) => {
   const data = await response.arrayBuffer();
   if (filename.includes("/")) {
     const dir = filename.split("/").slice(0, -1).join("/");
-    mkdirSync(DIST_FOLDER + dir, { recursive: true });
+    mkdirSync(RESOURCES_FOLDER + dir, { recursive: true });
   }
-  await writeFile(DIST_FOLDER + filename, new Uint8Array(data));
+  await writeFile(RESOURCES_FOLDER + filename, new Uint8Array(data));
   // sanity check file for success
-  if (!existsSync(DIST_FOLDER + filename)) {
+  if (!existsSync(RESOURCES_FOLDER + filename)) {
     throw new Error(`Failed to download ${filename}`);
   }
   // also check size not null or 0
-  const stats = statSync(DIST_FOLDER + filename);
+  const stats = statSync(RESOURCES_FOLDER + filename);
   if (stats.size === 0) {
     throw new Error(`Failed to download ${filename}`);
   }
   // also check binary
-  const buffer = await readFile(DIST_FOLDER + filename);
+  const buffer = await readFile(RESOURCES_FOLDER + filename);
   if (buffer.length === 0) {
     throw new Error(`Failed to download ${filename}`);
   }
@@ -364,7 +364,7 @@ await (async () => {
 })();
 
 // finally console.table over all files with some stats
-const files = readdirSync(DIST_FOLDER, {
+const files = readdirSync(RESOURCES_FOLDER, {
   withFileTypes: true,
   recursive: true,
 });

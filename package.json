@@ -22,7 +22,6 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.5.3",
     "bun": "^1.2.15"
   },
   "private": true,

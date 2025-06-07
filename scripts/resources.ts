@@ -200,6 +200,11 @@ const SIMPLE_FILES = {
     "https://3rditeration.github.io/slip39/src/js/slip39-libs.js",
   "petra-slip39/js/index.js":
     "https://3rditeration.github.io/slip39/src/js/index.js",
+
+  "petra-slip39/css/bootstrap-3.3.7.css":
+    "https://3rditeration.github.io/slip39/src/css/bootstrap-3.3.7.css",
+  "petra-slip39/css/app.css":
+    "https://3rditeration.github.io/slip39/src/css/app.css",
 };
 
 // await them in series via for of

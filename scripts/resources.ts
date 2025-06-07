@@ -5,6 +5,18 @@ import { writeFile } from "fs/promises";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+/**
+ * Echo about to download and give build a change to abort
+ * - only if not on ci
+ */
+if (!process.env.CI) {
+  console.log("About to download and give build a change to abort");
+  const answer = prompt("Continue? (y/N)");
+  if (!answer || answer.toLowerCase() !== "n") {
+    throw new Error("Aborted");
+  }
+}
+
 const DIST_FOLDER = "dist/prebuilt-resources/";
 // clean up the dist folder if it exists
 if (existsSync(DIST_FOLDER)) {

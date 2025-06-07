@@ -2,7 +2,8 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
-    "types": ["bun-types/dom"]
+    "jsx": "react-jsx",
+    "jsxImportSource": "preact"
   },
   "include": ["**/*.ts", "**/*.tsx"]
 }

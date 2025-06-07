@@ -1,13 +1,6 @@
 // import { $ } from "bun";
 import { fetch } from "bun";
-import {
-  Dirent,
-  existsSync,
-  mkdirSync,
-  readdirSync,
-  rmSync,
-  statSync,
-} from "fs";
+import { existsSync, mkdirSync, readdirSync, rmSync, statSync } from "fs";
 import { readFile, writeFile } from "fs/promises";
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -218,6 +211,7 @@ const releaseData = async (org: string, repo: string) => {
   const response = await fetch(
     `https://api.github.com/repos/${org}/${repo}/releases/latest`
   );
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const json = (await response.json()) as unknown as any;
   return json;
 };
@@ -226,6 +220,7 @@ const releaseData = async (org: string, repo: string) => {
 // # wget -q --show-progress --max-redirect=20 --no-server-response --content-disposition https://github.com/ethereum/staking-deposit-cli/releases/latest/download/staking_deposit-cli-fdab65d-linux-amd64.tar.gz
 await (async () => {
   const json = await releaseData("ethereum", "staking-deposit-cli");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const asset = json.assets.find((asset: any) =>
     asset.name.includes("linux-amd64.tar.gz")
   );
@@ -254,6 +249,7 @@ await (async () => {
   // "rocketpool-cli-linux-amd64"
   const match = /^rocketpool-cli-linux-amd64$/;
   const json = await releaseData("rocket-pool", "smartnode-install");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const asset = json.assets.find((asset: any) => asset.name.match(match));
   if (!asset) {
     throw new Error("No asset found for rocket-pool/smartnode-install");
@@ -377,6 +373,7 @@ for (const file of files) {
       .replace(/\n+$/, " ")
       .replace(/\s+/g, " ")
       .slice(0, 50);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     // If it's a binary file, reading as utf8 might fail
     first100 = "[binary file]";

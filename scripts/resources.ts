@@ -3,17 +3,6 @@ import { fetch } from "bun";
 import { existsSync, mkdirSync, rmSync } from "fs";
 import { writeFile } from "fs/promises";
 
-const resources = {
-  bitaps: {
-    MnemonicOfflineTool:
-      "https://raw.githubusercontent.com/bitaps-com/mnemonic-offline-tool/master/index.html",
-  },
-  thisbetom: {
-    DiceRollCalculator:
-      "https://raw.githubusercontent.com/tomfuertes/tails-offline-keygen/refs/heads/main/dist/index.html",
-  },
-};
-
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const DIST_FOLDER = "dist/prebuilt-resources/";
@@ -67,6 +56,12 @@ const downloadBinary = async (filename: string, url: string) => {
 };
 
 const SIMPLE_FILES = {
+  "bitaps-mnemonic-offline-tool.html":
+    "https://raw.githubusercontent.com/bitaps-com/mnemonic-offline-tool/master/index.html",
+
+  "thisbetom-dice-roll-calculator.html":
+    "https://raw.githubusercontent.com/tomfuertes/tails-offline-keygen/refs/heads/main/dist/index.html",
+
   // echo "Downloading Ian Coleman BIP39"
   // wget -q --show-progress --max-redirect=20 --no-server-response --content-disposition https://github.com/iancoleman/bip39/releases/latest/download/bip39-standalone.html
   // mv bip39-standalone.html ian-bip39.html

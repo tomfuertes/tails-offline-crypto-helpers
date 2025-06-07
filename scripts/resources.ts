@@ -348,6 +348,20 @@ await downloadBinary(
   "https://github.com/Bitcoin-com/paperwallet.bitcoin.com/archive/master.zip"
 );
 
+// microchad/borderwallets
+await (async () => {
+  const json = await releaseData("microchad", "borderwallets");
+  const asset = json.assets.find(
+    (asset: any) => asset.name === "borderwallets.html"
+  );
+  if (!asset) {
+    throw new Error("No asset found for microchad/borderwallets");
+  }
+  const download_url = asset.browser_download_url;
+  const tag_name = json.tag_name;
+  await downloadBinary("borderwallets" + tag_name + ".html", download_url);
+})();
+
 // finally console.table over all files with some stats
 const files = readdirSync(DIST_FOLDER, {
   withFileTypes: true,

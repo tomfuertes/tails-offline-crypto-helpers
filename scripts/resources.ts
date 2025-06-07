@@ -346,6 +346,12 @@ await (async () => {
   );
 })();
 
+// paperwallet.bitcoin.com
+await downloadBinary(
+  "paperwallet.bitcoin.com/paperwallet.zip",
+  "https://github.com/Bitcoin-com/paperwallet.bitcoin.com/archive/master.zip"
+);
+
 // finally console.table over all files with some stats
 const files = readdirSync(DIST_FOLDER, {
   withFileTypes: true,

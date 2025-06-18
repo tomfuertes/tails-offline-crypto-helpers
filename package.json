@@ -8,17 +8,17 @@
   },
   "main": "index.ts",
   "devDependencies": {
-    "@eslint/css": "^0.8.1",
-    "@eslint/js": "^9.28.0",
+    "@eslint/css": "^0.9.0",
+    "@eslint/js": "^9.29.0",
     "@eslint/json": "^0.12.0",
     "@types/bun": "latest",
-    "bun": "^1.2.15",
-    "eslint": "^9.28.0",
+    "bun": "^1.2.16",
+    "eslint": "^9.29.0",
     "eslint-plugin-react": "^7.37.5",
     "globals": "^16.2.0",
-    "happy-dom": "^17.6.3",
-    "preact": "^10.26.8",
-    "typescript-eslint": "^8.33.1"
+    "happy-dom": "^18.0.1",
+    "preact": "^10.26.9",
+    "typescript-eslint": "^8.34.1"
   },
   "peerDependencies": {
     "typescript": "^5"
@@ -31,7 +31,7 @@
   "license": "ISC",
   "private": true,
   "scripts": {
-    "dev": "bun run index.ts",
+    "dev": "bun run dev.ts",
     "build": "bun run clean && bun run build:cli && bun run build:web && bun run build:inline-scripts && bun run build:resources",
     "clean": "rm -rf ./dist && mkdir -p ./dist/cli ./dist/web",
     "build:resources": "bun run scripts/copy-resources.ts",
@@ -41,12 +41,18 @@
     "build:cli": "bun run build:cli:linux && bun run build:cli:macos",
     "build:cli:linux": "bun build cli/index.ts --compile --target=bun-linux-x64-baseline --outfile dist/cli/tails-offline-crypto-helpers && chmod +x dist/cli/tails-offline-crypto-helpers",
     "build:cli:macos": "bun build cli/index.ts --compile --target=bun-darwin-arm64-baseline --outfile dist/cli/macos-offline-crypto-helpers && chmod +x dist/cli/macos-offline-crypto-helpers",
-    "build:web": "bun build src/*.html --outdir dist/web --target browser --minify --inline",
+    "build:web": "bun build src/*.html --outdir dist/web --target browser",
     "serve": "bunx serve dist/web",
     "lint": "bun run lint:es || true && bun run lint:typecheck",
     "lint:es": "bunx eslint .",
     "lint:typecheck": "bunx tsc --noEmit --project src && bunx tsc --noEmit --project cli && bunx tsc --noEmit --project scripts",
     "test": "bun test -- ./tests/"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@solana/web3.js": "^1.98.2",
+    "ethers": "^6.14.4",
+    "micro-ed25519-hdkey": "^0.1.2",
+    "web-bip39": "^0.0.3"
+  }
 }

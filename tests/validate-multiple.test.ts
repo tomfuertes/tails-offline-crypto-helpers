@@ -11,7 +11,6 @@ test("2 + 2", () => {
 
 const EXAMPLE_MNEMONIC =
   "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
-const address = "1LqBGSKuX5yYUonjxT5qGfpUsXKYYWeabA";
 
 test("ian-bip39.html generates correct output for example mnemonic", async () => {
   // todo: playwright instead of happy-dom

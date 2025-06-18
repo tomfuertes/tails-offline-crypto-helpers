@@ -31,19 +31,28 @@ async function inlineScripts() {
         /<script\s+(?=.*type=["']module["'])(?=.*src=["']\.\/([^"']+\.js)["'])[^>]*><\/script>/g;
 
       let modifiedContent = htmlContent;
-      let match;
       let hasInlinedScripts = false;
 
-      // Find all script tags that match the pattern
+      // Collect all matches first to avoid regex state issues
+      const matches = [];
+      let match;
       while ((match = scriptRegex.exec(htmlContent)) !== null) {
-        const fullMatch = match[0];
-        // Extract the filename from the src attribute
-        const srcMatch = fullMatch.match(/src=["']\.\/([^"']+\.js)["']/);
-        if (!srcMatch) continue;
-        const scriptFileName = srcMatch[1];
-        if (!scriptFileName) continue;
-        console.log(`  Found script reference: ${scriptFileName}`);
-        const scriptPath = join(DIST_WEB_DIR, scriptFileName);
+        matches.push({
+          fullMatch: match[0],
+          scriptFileName: match[1],
+          index: match.index,
+        });
+      }
+
+      console.log(`  Found ${matches.length} script references`);
+
+      // Process matches in reverse order to avoid index shifting issues
+      for (let i = matches.length - 1; i >= 0; i--) {
+        if (!matches[i]) continue;
+        const { fullMatch, scriptFileName, index } = matches[i]!;
+
+        console.log(`  Processing script reference: ${scriptFileName}`);
+        const scriptPath = join(DIST_WEB_DIR, scriptFileName!);
 
         // Check if the script file exists
         if (existsSync(scriptPath)) {
@@ -54,8 +63,12 @@ async function inlineScripts() {
             // Create the inline script tag
             const inlineScript = `<script type="module">${scriptContent}</script>`;
 
-            // Replace the external script reference with inline content
-            modifiedContent = modifiedContent.replace(fullMatch, inlineScript);
+            // Replace the specific occurrence using substring replacement
+            modifiedContent =
+              modifiedContent.substring(0, index) +
+              inlineScript +
+              modifiedContent.substring(index + fullMatch.length);
+
             hasInlinedScripts = true;
 
             console.log(`  ✓ Inlined ${scriptFileName}`);
